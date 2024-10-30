@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+node_modules/
+*.o
+*.out
+*.log
+.env
+data/
+libs/
+/Lib
+wu_venv/
+__pycache__/
+*.csv
+*.png
