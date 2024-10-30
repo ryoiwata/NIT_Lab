@@ -11,3 +11,6 @@ libs/
 __pycache__/
 *.csv
 *.png
+wu_venv/Lib/site-packages/
+wu_venv/**/__pycache__/
+wu_venv/**/*.pyc
