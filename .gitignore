@@ -8,7 +8,6 @@ node_modules/
 data/
 libs/
 /Lib
-wu_venv/
 __pycache__/
 *.csv
 *.png
