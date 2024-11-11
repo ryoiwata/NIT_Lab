@@ -40,3 +40,68 @@ class Denoising_EEG:
         raw_corrected = df.copy()
         ica.apply(raw_corrected)
         return raw_corrected
+
+
+class Plots:
+
+    def plot_original(file_path):
+        df = pd.read_csv(file_path, skiprows=11)
+
+        # Rename columns for clarity
+        df.columns = ['index', 'CH1_Voltage(mV)']
+
+        # Extract time and signal data
+        time = df['index'].values
+        signal = df['CH1_Voltage(mV)'].values
+
+        # Detrend the raw signal to remove any linear trend
+        signal = detrend(signal)
+
+        # Plot the raw signal
+        plt.figure(figsize=(10, 5))
+        plt.plot(time, signal, color='blue', label='Raw EEG Signal')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Voltage (mV)')
+        plt.title('Raw EEG Signal Before Processing')
+        plt.legend()
+        plt.grid()
+        plt.show()
+    
+    def plot_4panel(file_path):
+        fs = 1000  # Sampling frequency
+        time = np.linspace(0, 10, fs * 10)  # Time vector
+        signal = np.sin(2 * np.pi * 10 * time) + 0.5 * np.random.randn(len(time))  # Synthetic raw EEG signal with noise
+
+        # Apply detrending to simulate preprocessing
+        signal_detrended = detrend(signal)
+
+        # Create a figure with four subplots (2 rows, 2 columns)
+        fig, axs = plt.subplots(2, 2, figsize=(12, 8))
+
+        # Plot 1: Raw Signal
+        axs[0, 0].plot(time, signal, color='blue')
+        axs[0, 0].set_title('Raw EEG Signal')
+        axs[0, 0].set_xlabel('Time (s)')
+        axs[0, 0].set_ylabel('Voltage (mV)')
+        axs[0, 0].grid()
+
+        # Plot 2: Detrended Signal
+        axs[0, 1].plot(time, signal_detrended, color='orange')
+        axs[0, 1].set_title('Detrended EEG Signal')
+        axs[0, 1].set_xlabel('Time (s)')
+        axs[0, 1].set_ylabel('Voltage (mV)')
+        axs[0, 1].grid()
+
+        # Plot 3: Histogram of Raw Signal
+        axs[1, 0].hist(signal, bins=50, color='green')
+        axs[1, 0].set_title('Histogram of Raw Signal')
+        axs[1, 0].set_xlabel('Voltage (mV)')
+        axs[1, 0].set_ylabel('Frequency')
+
+        # Plot 4: Power Spectral Density (PSD) of Detrended Signal
+        axs[1, 1].psd(signal_detrended, Fs=fs, color='purple')
+        axs[1, 1].set_title('Power Spectral Density of Detrended Signal')
+
+        # Adjust layout
+        plt.tight_layout()
+        plt.show()
