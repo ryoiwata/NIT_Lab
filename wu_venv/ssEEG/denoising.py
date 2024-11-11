@@ -1,4 +1,4 @@
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import pandas as pd
 from scipy import signal
 from scipy.signal import butter, filtfilt, iirnotch, detrend
@@ -43,4 +43,4 @@ signal_denoised = Denoising_EEG.wavelet_denoise(signal_bandpassed)
 
 Plots.plot_original(file_path)
 
-Plots.plot_4panel(file_path)
+Plots.plot_4panel(time, signal, fs)
