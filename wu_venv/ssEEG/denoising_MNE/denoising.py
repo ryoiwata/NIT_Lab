@@ -3,14 +3,16 @@ import numpy as np
 import mne
 from scipy.signal import detrend
 from denoising_h import DataPreprocess
+import matplotlib.pyplot as plt
+
 
 # Define the file path
-file_path = "wu_venv/ssEEG/10_29_24 experiment/csv_files/WAVE4_Flick.CSV"
+file_path = "wu_venv/ssEEG/10_29_24 experiment/csv_files/SDS00005.csv"
 # eeg_data = DataPreprocess.remove_missing(file_path)
 # result = DataPreprocess.convert_to_fif(eeg_data)
 # print(result)
 
-df = pd.read_csv(file_path, skiprows=10)
+df = pd.read_csv(file_path, skiprows=11)
 print("Columns in CSV:", df.columns)
 
 

@@ -14,10 +14,15 @@ class DataPreprocess:
     # in order to use the .csv file with mne, we need to first 
     # convert it to a fif file format 
     def remove_missing(csv_path):
-        df = pd.read_csv(csv_path, skiprows=10, engine='python')
+        df = pd.read_csv(csv_path, skiprows=11, engine='python')
         df.columns = df.columns.str.strip()
-        df = df.dropna(subset=['CH1_Voltage(mV)'])
-        eeg_data = df['CH1_Voltage(mV)'].values
+        df = df.dropna(subset=['Volt'])
+        eeg_data = df['Volt'].values
+        expected_samples = 1400000
+        
+        if len(eeg_data) != expected_samples:
+            raise ValueError(f"Expected {expected_samples} samples, but got {len(eeg_data)} samples.")
+        
         return eeg_data
         
     def convert_to_fif(eeg_data):
@@ -31,8 +36,9 @@ class DataPreprocess:
             fif_path = "eeg_data_raw.fif"
             raw.save(fif_path, overwrite=True)
             
-            raw.plot(scalings='auto', n_channels=1, duration=10, title="Raw EEG Signal")
-
+            raw.notch_filter(freqs=[50, 60])
+            raw.plot(scalings='auto', n_channels=1, duration=10, title="Filtered EEG Signal")            
+            plt.show()
             return f"CSV converted to FIF and saved at {fif_path}"
         
 
