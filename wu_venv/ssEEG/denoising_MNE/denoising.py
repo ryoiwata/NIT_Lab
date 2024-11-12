@@ -15,10 +15,16 @@ file_path = "wu_venv/ssEEG/10_29_24 experiment/csv_files/SDS00005.csv"
 df = pd.read_csv(file_path, skiprows=11)
 print("Columns in CSV:", df.columns)
 
-
 eeg_data = DataPreprocess.remove_missing(file_path)
 DataPreprocess.convert_to_fif(eeg_data)
 
+print(f"Min value: {np.min(eeg_data)}, Max value: {np.max(eeg_data)}")
+print(f"Mean value: {np.mean(eeg_data)}, Std Dev: {np.std(eeg_data)}")
+
 duration = len(eeg_data) / 5000
 print(f"Expected recording duration: {duration:.2f} seconds")
+
+
+import matplotlib.pyplot as plt
+
 

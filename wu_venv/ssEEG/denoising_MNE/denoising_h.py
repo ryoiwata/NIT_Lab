@@ -29,22 +29,39 @@ class DataPreprocess:
         try:
             sfreq = 5000
             info = mne.create_info(ch_names=['EEG'], sfreq=sfreq, ch_types=['eeg'])
-            eeg_data = eeg_data / 1000.0
+            #eeg_data = eeg_data / 1000.0
             eeg_data = eeg_data.reshape(1,-1)
             raw = mne.io.RawArray(eeg_data, info)
 
             fif_path = "eeg_data_raw.fif"
             raw.save(fif_path, overwrite=True)
-            
-            raw.notch_filter(freqs=[50, 60])
-            raw.plot(scalings='auto', n_channels=1, duration=10, title="Filtered EEG Signal")            
-            plt.show()
             return f"CSV converted to FIF and saved at {fif_path}"
         
-
         except Exception as e:
             return f"Error occurred: {e}"
         
-# class Filtration: 
-#     def apply_Notch(raw):
+        
+class Filter:
+    def apply_MNE_filters(raw):
+        raw.notch_filter(freqs=[50, 60])
+        raw.filter(l_freq=None, h_freq=50)
+        raw.plot(scalings={'eeg': 1e-4}, n_channels=1, duration=10, title="Filtered EEG Signal")            
+        filtered_raw = raw
+        return filtered_raw
+
+class Plot:
+    def plot_original(eeg_data):
+        plt.plot(eeg_data[:10000])  # Plot the first 10,000 samples (~2 seconds)
+        plt.xlabel("Sample Index")
+        plt.ylabel("Voltage (V)")
+        plt.title("Subset of Raw EEG Signal from .csv")
+        plt.show()
+    
+    def plot_raw(raw):
+        raw.plot(scalings={'eeg': 1e-4}, n_channels=1, duration=10, title="Raw EEG Signal")            
+        plt.show()
+    
+    def plot_filtered_raw(filtered_raw):
+        filtered_raw.plot(scalings={'eeg': 1e-4}, n_channels=1, duration=10, title="Filtered EEG Signal") 
+        plt.show()
         
