@@ -46,7 +46,9 @@ class Data_Preprocess:
         
     def filter_raw(raw):
         # Apply a bandpass filter (0.5-40 Hz) to focus on the typical EEG frequency range
-        raw.filter(l_freq=0.5, h_freq=40, filter_length='auto')            
+        raw.filter(l_freq=0.5, h_freq=40, filter_length='auto')      
+        raw.filter(0.5, 40)  # Apply a bandpass filter from 0.5 to 40 Hz
+raw.plot()      
             
         
 class Denoising_EEG:
@@ -204,7 +206,8 @@ class Plots:
     
     def plot_clean_eeg(raw):
         # Plot the cleaned data
-        raw.plot(block=True)
+        raw.resample(200)  # Downsample to 200 Hz
+        raw.plot()
         time = df['index'].values
         signal = df['CH1_Voltage(mV)']
         Plots.plot_4panel(time, signal, fs=100, notch_freq=60, lowcut=0.5, highcut=40)
