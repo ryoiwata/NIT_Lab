@@ -2,9 +2,11 @@ import pandas as pd
 import numpy as np
 import mne
 from scipy.signal import detrend
-from denoising_h import DataPreprocess, Plot, Filter, Events
+from denoising_h import DataPreprocess, Plot, Filter, Events, FFT
 import matplotlib.pyplot as plt
 import os
+from mne.time_frequency import tfr_multitaper
+
 
 
 # Define the file path
@@ -39,7 +41,7 @@ def main():
             filtered_raw = Filter.apply_all_filters(raw)
 
             # Downsample the filtered data
-            filtered_raw = Filter.apply_downsampling(filtered_raw, new_sfreq=250)
+            filtered_raw = Filter.apply_downsampling(filtered_raw, new_sfreq=200)
             
             Filter.inspect_signal(filtered_raw)
 
@@ -48,6 +50,14 @@ def main():
             for event_name, (start_time, end_time) in events_dict.items():
                 print(f"Plotting event: {event_name} (from {start_time}s to {end_time}s)")
                 Plot.plot_event_segment(filtered_raw, event_name, start_time, end_time)
+
+            FFT.plot_psd_with_mne(raw)
+            
+            FFT.compute_psd_plot(raw)
+            
+            FFT.compute_psd_mne(raw)
+            
+            #FFT.plot_fft_psd(raw)
 
     except Exception as e:
         print(f"An error occurred: {e}")

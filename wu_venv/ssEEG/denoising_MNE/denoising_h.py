@@ -7,6 +7,8 @@ import pywt
 import mne
 from mne.preprocessing import ICA
 import os
+from mne.time_frequency import tfr_multitaper
+
 # Updating the code to fix ICA components and adjust filter length.
 
 class DataPreprocess:
@@ -155,3 +157,37 @@ class Events:
             "Stop Touching": (173, 280),  # From 173s to 280s
         }
     
+    
+    
+    
+class FFT:
+    def plot_psd_with_mne(raw):
+        raw.plot_psd(fmin=0.5, fmax=100, n_fft=2048, average=True, show=True)
+        plt.show()
+        
+    def compute_psd_plot(raw):
+        psd = raw.compute_psd(method='welch', fmin=0.5, fmax=50, n_fft=2048, n_overlap=512)
+        psd.plot()
+        plt.show()
+        
+
+    def compute_tfr_multitaper(raw):
+        epochs = mne.make_fixed_length_epochs(raw, duration=2.0, overlap=0.5)
+        power = tfr_multitaper(epochs, fmin=0.5, fmax=100, n_cycles=2, return_itc=False)
+        
+        # Plot the TFR
+        power.plot([0], baseline=(None, 0), mode='logratio', title='TFR Multitaper')
+        plt.show()
+    
+    def compute_psd_mne(raw):
+        try:
+            print("Computing and plotting Power Spectral Density (PSD)...")
+            # Compute the PSD using the MNE method
+            psd = raw.compute_psd()
+            
+            # Plot the PSD
+            psd.plot(dB=True, show=True, spatial_colors=False)
+            plt.show(block=True)
+            
+        except Exception as e:
+            print(f"An error occurred while plotting PSD: {e}")
