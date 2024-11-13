@@ -161,33 +161,37 @@ class Events:
     
     
 class FFT:
-    def plot_psd_with_mne(raw):
-        raw.plot_psd(fmin=0.5, fmax=100, n_fft=2048, average=True, show=True)
-        plt.show()
-        
     def compute_psd_plot(raw):
-        psd = raw.compute_psd(method='welch', fmin=0.5, fmax=50, n_fft=2048, n_overlap=512)
+        fig = psd = raw.compute_psd(method='welch', fmin=0.5, fmax=50, n_fft=2048, n_overlap=512)
         psd.plot()
         plt.show()
-        
+        plt.figure()
+        psd.plot(dB=True)
+        plt.savefig("wu_venv/ssEEG/denoising_MNE/output/mne_psd_line_plot.png", dpi=300)
+        plt.close()
 
     def compute_tfr_multitaper(raw):
-        epochs = mne.make_fixed_length_epochs(raw, duration=2.0, overlap=0.5)
-        power = tfr_multitaper(epochs, fmin=0.5, fmax=100, n_cycles=2, return_itc=False)
-        
-        # Plot the TFR
-        power.plot([0], baseline=(None, 0), mode='logratio', title='TFR Multitaper')
-        plt.show()
-    
-    def compute_psd_mne(raw):
         try:
-            print("Computing and plotting Power Spectral Density (PSD)...")
-            # Compute the PSD using the MNE method
-            psd = raw.compute_psd()
+            print("Performing Time-Frequency Analysis using Multitaper method...")
             
-            # Plot the PSD
-            psd.plot(dB=True, show=True, spatial_colors=False)
-            plt.show(block=True)
+            # Create epochs with a longer duration
+            epochs = mne.make_fixed_length_epochs(raw, duration=3.0, overlap=1.0)
+            
+            # Compute TFR using multitaper method
+            power = epochs.compute_tfr(
+                method="multitaper", freqs=np.linspace(0.5, 40, 100), n_cycles=1.5, time_bandwidth=2.0, return_itc=False
+            )
+            
+            # Average the TFR across all epochs
+            power_avg = power.average()
+            
+            # Plot the averaged TFR
+            fig = power_avg.plot(baseline=(None, 0), mode='logratio', title='Averaged TFR Multitaper')
+            plt.show()
+            save_path = f"wu_venv/ssEEG/denoising_MNE/output/tfr_multitaper_color_plot.png"
+            fig.savefig(save_path, dpi=300)
+            plt.close(fig)
+            print("TFR analysis and averaged plotting completed.")
             
         except Exception as e:
-            print(f"An error occurred while plotting PSD: {e}")
+            print(f"An error occurred while performing TFR analysis: {e}")

@@ -50,13 +50,10 @@ def main():
             for event_name, (start_time, end_time) in events_dict.items():
                 print(f"Plotting event: {event_name} (from {start_time}s to {end_time}s)")
                 Plot.plot_event_segment(filtered_raw, event_name, start_time, end_time)
-
-            FFT.plot_psd_with_mne(raw)
             
             FFT.compute_psd_plot(raw)
             
-            FFT.compute_psd_mne(raw)
-            
+            FFT.compute_tfr_multitaper(raw)
             #FFT.plot_fft_psd(raw)
 
     except Exception as e:
