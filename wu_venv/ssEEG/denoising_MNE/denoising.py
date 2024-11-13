@@ -13,6 +13,8 @@ file_path = "wu_venv/ssEEG/10_29_24 experiment/csv_files/SDS00005.csv"
 # result = DataPreprocess.convert_to_fif(eeg_data)
 # print(result)
 def main():
+    
+    
     try:
         # Step 1: Load the EEG data from the CSV file
         eeg_data = DataPreprocess.remove_missing(file_path)
@@ -22,9 +24,24 @@ def main():
         raw, message = DataPreprocess.convert_to_fif(eeg_data)
         print(message)
 
+        
+
         if raw:
+            Filter.inspect_signal(raw)
+            
+            print("Existing SSP Projectors:", raw.info["projs"])
+
+# If there are any existing projectors, decide whether to keep or delete them
+            if len(raw.info["projs"]) > 0:
+                print("Projectors are present. Removing them before further processing.")
+                raw.del_proj()  # Remove existing projectors
             # Step 3: Apply filters and get the filtered raw data
-            filtered_raw = Filter.apply_MNE_filters(raw)
+            filtered_raw = Filter.apply_all_filters(raw)
+
+            # Downsample the filtered data
+            filtered_raw = Filter.apply_downsampling(filtered_raw, new_sfreq=250)
+            
+            Filter.inspect_signal(filtered_raw)
 
             # Step 4: Plot individual segments based on stimulation events
             events_dict = Events.get_events_dict()

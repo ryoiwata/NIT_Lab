@@ -43,12 +43,53 @@ class DataPreprocess:
         
         
 class Filter:
-    def apply_MNE_filters(raw):
-        raw.notch_filter(freqs=[50, 60])
-        raw.filter(l_freq=None, h_freq=50)
-        raw.plot(scalings={'eeg': 1e-4}, n_channels=1, duration=10, title="Filtered EEG Signal")            
-        filtered_raw = raw
-        return filtered_raw
+    
+    def inspect_signal(raw):
+        data = raw.get_data()
+        min_value = np.min(data)
+        max_value = np.max(data)
+        mean_value = np.mean(data)
+        std_dev = np.std(data)
+        print(f"Signal Statistics - Min: {min_value:.2f}, Max: {max_value:.2f}, Mean: {mean_value:.2f}, Std Dev: {std_dev:.2f}")
+
+    @staticmethod
+    def apply_downsampling(raw, new_sfreq=250):
+        # Downsample the data to the specified frequency (e.g., 250 Hz)
+        raw.resample(new_sfreq, npad="auto")
+        print(f"Data downsampled to {new_sfreq} Hz.")
+        return raw
+
+    @staticmethod
+    def apply_detrend(raw):
+        # Get the data as a numpy array
+        data = raw.get_data()
+        # Apply detrending to the data (order=1 for linear detrending)
+        data = mne.filter.detrend(data, order=1)
+        # Update the raw object with the detrended data
+        raw._data = data
+        return raw
+    
+    def apply_bandpass_filter(raw):
+        # Apply a band-pass filter to focus on the 0.5-40 Hz range
+        raw.filter(l_freq=0.5, h_freq=40, picks='eeg')
+        return raw
+    
+    
+    @staticmethod
+    def apply_notch_filter(raw):
+        # Apply a notch filter to remove power line noise (50 Hz and 60 Hz)
+        raw.notch_filter(freqs=[50, 60], picks='eeg')
+        return raw
+
+
+    
+    @staticmethod
+    def apply_all_filters(raw):
+        # Apply all preprocessing steps
+        raw = Filter.apply_detrend(raw)
+        raw = Filter.apply_notch_filter(raw)
+        raw = Filter.apply_bandpass_filter(raw)
+        return raw
 
 import matplotlib.pyplot as plt
 
@@ -64,24 +105,43 @@ class Plot:
 
     @staticmethod
     def plot_raw(raw):
-        fig = raw.plot(scalings='auto', n_channels=1, duration=10, title="Raw EEG Signal", show=False)
+        fig = raw.plot(scalings='auto', n_channels=1, duration=40, title="Raw EEG Signal", show=False)
         fig.savefig("wu_venv/ssEEG/denoising_MNE/output/raw_eeg_plot.png", dpi=300)
         plt.close(fig)
 
     @staticmethod
     def plot_filtered_raw(filtered_raw):
-        fig = filtered_raw.plot(scalings='auto', n_channels=1, duration=10, title="Filtered EEG Signal", show=False)
+        fig = filtered_raw.plot(scalings='auto', n_channels=1, duration=40, title="Filtered EEG Signal", show=False)
         fig.savefig("wu_venv/ssEEG/denoising_MNE/output/filtered_eeg_plot.png", dpi=300)
         plt.close(fig)
 
     @staticmethod
     def plot_event_segment(raw, event_name, start_time, end_time):
+        # Get the signal statistics
+        data = raw.get_data()
+        std_dev = np.std(data)
+        
+        # Set the scaling based on the standard deviation of the signal
+        dynamic_scaling = std_dev * 2  # Use 2 times the standard deviation
+        custom_scalings = {'eeg': dynamic_scaling}
+        print(f"Using dynamic scaling: {dynamic_scaling:.2e}")
+
         # Plot the segment for the specified event
         duration = end_time - start_time
-        fig = raw.plot(start=start_time, duration=duration, scalings='auto', n_channels=1, title=f"EEG Signal: {event_name}", show=False)
-        filename = f"wu_venv/ssEEG/denoising_MNE/output/{event_name.replace(' ', '_').lower()}_segment.png"
-        fig.savefig(filename, dpi=300)
+        fig = raw.plot(
+            start=start_time,
+            duration=duration,
+            scalings=custom_scalings,
+            n_channels=1,
+            title=f"EEG Signal: {event_name}",
+            show=False
+        )
+        
+        # Save the figure
+        save_path = f"wu_venv/ssEEG/denoising_MNE/output/{event_name.lower().replace(' ', '_')}_segment.png"
+        fig.savefig(save_path, dpi=300)
         plt.close(fig)
+        print(f"Saved plot for {event_name} at {save_path}")
 
 
 class Events:
