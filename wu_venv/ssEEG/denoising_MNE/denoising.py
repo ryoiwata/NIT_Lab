@@ -33,7 +33,6 @@ def main():
             
             print("Existing SSP Projectors:", raw.info["projs"])
 
-# If there are any existing projectors, decide whether to keep or delete them
             if len(raw.info["projs"]) > 0:
                 print("Projectors are present. Removing them before further processing.")
                 raw.del_proj()  # Remove existing projectors
@@ -45,7 +44,7 @@ def main():
             
             Filter.inspect_signal(filtered_raw)
 
-            # Step 4: Plot individual segments based on stimulation events
+            # Step 4: Plot segments based on events
             events_dict = Events.get_events_dict()
             for event_name, (start_time, end_time) in events_dict.items():
                 print(f"Plotting event: {event_name} (from {start_time}s to {end_time}s)")
@@ -56,6 +55,8 @@ def main():
             
             FFT.compute_tfr_multitaper(raw)
             #FFT.plot_fft_psd(raw)
+            
+            #Filter.average_filtered(filtered_raw)
 
     except Exception as e:
         print(f"An error occurred: {e}")
