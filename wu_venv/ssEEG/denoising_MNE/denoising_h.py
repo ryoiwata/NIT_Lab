@@ -6,7 +6,7 @@ import numpy as np
 import pywt
 import mne
 from mne.preprocessing import ICA
-
+import os
 # Updating the code to fix ICA components and adjust filter length.
 
 class DataPreprocess:
@@ -50,19 +50,48 @@ class Filter:
         filtered_raw = raw
         return filtered_raw
 
+import matplotlib.pyplot as plt
+
 class Plot:
+    @staticmethod
     def plot_original(eeg_data):
         plt.plot(eeg_data[:10000])  # Plot the first 10,000 samples (~2 seconds)
         plt.xlabel("Sample Index")
         plt.ylabel("Voltage (V)")
         plt.title("Subset of Raw EEG Signal from .csv")
-        plt.show()
-    
+        plt.savefig("wu_venv/ssEEG/denoising_MNE/output/original_eeg_plot.png", dpi=300)
+        plt.close()
+
+    @staticmethod
     def plot_raw(raw):
-        raw.plot(scalings='auto', n_channels=1, duration=10, title="Raw EEG Signal")            
-        plt.show()
-    
+        fig = raw.plot(scalings='auto', n_channels=1, duration=10, title="Raw EEG Signal", show=False)
+        fig.savefig("wu_venv/ssEEG/denoising_MNE/output/raw_eeg_plot.png", dpi=300)
+        plt.close(fig)
+
+    @staticmethod
     def plot_filtered_raw(filtered_raw):
-        filtered_raw.plot(scalings='auto', n_channels=1, duration=10, title="Filtered EEG Signal") 
-        plt.show()
-        
+        fig = filtered_raw.plot(scalings='auto', n_channels=1, duration=10, title="Filtered EEG Signal", show=False)
+        fig.savefig("wu_venv/ssEEG/denoising_MNE/output/filtered_eeg_plot.png", dpi=300)
+        plt.close(fig)
+
+    @staticmethod
+    def plot_event_segment(raw, event_name, start_time, end_time):
+        # Plot the segment for the specified event
+        duration = end_time - start_time
+        fig = raw.plot(start=start_time, duration=duration, scalings='auto', n_channels=1, title=f"EEG Signal: {event_name}", show=False)
+        filename = f"wu_venv/ssEEG/denoising_MNE/output/{event_name.replace(' ', '_').lower()}_segment.png"
+        fig.savefig(filename, dpi=300)
+        plt.close(fig)
+
+
+class Events:
+    @staticmethod
+    def get_events_dict():
+        # Define the time points for each event (in EEG time from CSV)
+        return {
+            "Sound On": (0, 40),          # From 0s to 40s in EEG time
+            "Sound Off": (40, 113),       # From 40s to 113s
+            "Touch Whiskers": (113, 173), # From 113s to 173s
+            "Stop Touching": (173, 280),  # From 173s to 280s
+        }
+    
