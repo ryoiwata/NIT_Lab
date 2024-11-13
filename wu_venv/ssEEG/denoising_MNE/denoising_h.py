@@ -35,7 +35,8 @@ class DataPreprocess:
 
             fif_path = "eeg_data_raw.fif"
             raw.save(fif_path, overwrite=True)
-            return f"CSV converted to FIF and saved at {fif_path}"
+            message =  f"CSV converted to FIF and saved at {fif_path}"
+            return raw, message
         
         except Exception as e:
             return f"Error occurred: {e}"
@@ -58,10 +59,10 @@ class Plot:
         plt.show()
     
     def plot_raw(raw):
-        raw.plot(scalings={'eeg': 1e-4}, n_channels=1, duration=10, title="Raw EEG Signal")            
+        raw.plot(scalings='auto', n_channels=1, duration=10, title="Raw EEG Signal")            
         plt.show()
     
     def plot_filtered_raw(filtered_raw):
-        filtered_raw.plot(scalings={'eeg': 1e-4}, n_channels=1, duration=10, title="Filtered EEG Signal") 
+        filtered_raw.plot(scalings='auto', n_channels=1, duration=10, title="Filtered EEG Signal") 
         plt.show()
         

@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import mne
 from scipy.signal import detrend
-from denoising_h import DataPreprocess
+from denoising_h import DataPreprocess, Plot, Filter
 import matplotlib.pyplot as plt
 
 
@@ -11,20 +11,33 @@ file_path = "wu_venv/ssEEG/10_29_24 experiment/csv_files/SDS00005.csv"
 # eeg_data = DataPreprocess.remove_missing(file_path)
 # result = DataPreprocess.convert_to_fif(eeg_data)
 # print(result)
+def main():
+    try:
+        # Step 1: Load the EEG data from the CSV file
+        eeg_data = DataPreprocess.remove_missing(file_path)
+        print("Successfully loaded EEG data.")
 
-df = pd.read_csv(file_path, skiprows=11)
-print("Columns in CSV:", df.columns)
+        # Step 2: Plot the original subset of the EEG data
+        print("Plotting the original EEG data...")
+        #Plot.plot_original(eeg_data)
 
-eeg_data = DataPreprocess.remove_missing(file_path)
-DataPreprocess.convert_to_fif(eeg_data)
+        # Step 3: Convert the EEG data to a Raw MNE object and save as .fif
+        raw, message = DataPreprocess.convert_to_fif(eeg_data)
+        print(message)
 
-print(f"Min value: {np.min(eeg_data)}, Max value: {np.max(eeg_data)}")
-print(f"Mean value: {np.mean(eeg_data)}, Std Dev: {np.std(eeg_data)}")
+        # If the raw object was created successfully, proceed
+        if raw:
+            # Step 4: Plot the raw EEG signal
+            print("Plotting the raw EEG data...")
+            Plot.plot_raw(raw)
 
-duration = len(eeg_data) / 5000
-print(f"Expected recording duration: {duration:.2f} seconds")
+            # Step 5: Apply filters and plot the filtered EEG signal
+            print("Applying filters and plotting the filtered EEG data...")
+            filtered_raw = Filter.apply_MNE_filters(raw)
+            Plot.plot_filtered_raw(filtered_raw)
 
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
-import matplotlib.pyplot as plt
-
-
+if __name__ == "__main__":
+    main()
