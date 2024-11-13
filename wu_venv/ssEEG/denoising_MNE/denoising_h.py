@@ -118,6 +118,42 @@ class Plot:
         plt.close(fig)
 
     @staticmethod
+    def plot_cropped_event_segment(raw, event_name, start_time, end_time):
+        # Ensure that the time range is within the bounds of the data
+        start_time = max(0, start_time)
+        end_time = min(raw.times[-1], end_time)
+        
+        # Calculate the duration for plotting (same as the event duration)
+        duration = end_time - start_time
+        
+        # Get the signal statistics for dynamic scaling
+        data = raw.get_data()
+        std_dev = np.std(data)
+        dynamic_scaling = std_dev * 2
+        custom_scalings = {'eeg': dynamic_scaling}
+        
+        print(f"Using dynamic scaling: {dynamic_scaling:.2e}")
+        print(f"Cropping and plotting {event_name} from {start_time}s to {end_time}s")
+
+        # Crop the raw data to the specified time window
+        cropped_raw = raw.copy().crop(tmin=start_time, tmax=end_time)
+
+        # Plot the cropped segment for the specified event
+        fig = cropped_raw.plot(
+            scalings=custom_scalings,
+            n_channels=1,
+            duration=duration,
+            title=f"EEG Signal: {event_name} (Cropped)",
+            show=False
+        )
+
+        # Save the figure
+        save_path = f"wu_venv/ssEEG/denoising_MNE/output/{event_name.lower().replace(' ', '_')}_cropped_segment.png"
+        fig.savefig(save_path, dpi=300)
+        plt.close(fig)
+        print(f"Saved cropped plot for {event_name} at {save_path}")
+
+    @staticmethod
     def plot_event_segment(raw, event_name, start_time, end_time):
         # Get the signal statistics
         data = raw.get_data()
@@ -144,7 +180,6 @@ class Plot:
         fig.savefig(save_path, dpi=300)
         plt.close(fig)
         print(f"Saved plot for {event_name} at {save_path}")
-
 
 class Events:
     @staticmethod

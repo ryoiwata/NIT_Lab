@@ -50,6 +50,7 @@ def main():
             for event_name, (start_time, end_time) in events_dict.items():
                 print(f"Plotting event: {event_name} (from {start_time}s to {end_time}s)")
                 Plot.plot_event_segment(filtered_raw, event_name, start_time, end_time)
+                Plot.plot_cropped_event_segment(filtered_raw, event_name, start_time, end_time)
             
             FFT.compute_psd_plot(raw)
             
