@@ -11,9 +11,9 @@ from mne.time_frequency import tfr_multitaper
 
 # Define the file path
 file_path = "wu_venv/ssEEG/10_29_24 experiment/csv_files/SDS00005.csv"
-# eeg_data = DataPreprocess.remove_missing(file_path)
-# result = DataPreprocess.convert_to_fif(eeg_data)
-# print(result)
+eeg_data = DataPreprocess.remove_missing(file_path)
+result = DataPreprocess.convert_to_fif(eeg_data)
+print(result)
 def main():
     
     
@@ -22,6 +22,7 @@ def main():
         eeg_data = DataPreprocess.remove_missing(file_path)
         print("Successfully loaded EEG data.")
 
+        
         # Step 2: Convert the EEG data to a Raw MNE object and save as .fif
         raw, message = DataPreprocess.convert_to_fif(eeg_data)
         print(message)
@@ -36,6 +37,8 @@ def main():
             if len(raw.info["projs"]) > 0:
                 print("Projectors are present. Removing them before further processing.")
                 raw.del_proj()  # Remove existing projectors
+                
+            Filter.apply_fastICA(raw)
             # Step 3: Apply filters and get the filtered raw data
             filtered_raw = Filter.apply_all_filters(raw)
 
@@ -56,7 +59,7 @@ def main():
             FFT.compute_tfr_multitaper(raw)
             #FFT.plot_fft_psd(raw)
             
-            #Filter.average_filtered(filtered_raw)
+            Filter.average_filtered(filtered_raw)
 
     except Exception as e:
         print(f"An error occurred: {e}")

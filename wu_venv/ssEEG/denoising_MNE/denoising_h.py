@@ -8,6 +8,8 @@ import mne
 from mne.preprocessing import ICA
 import os
 from mne.time_frequency import tfr_multitaper
+import sklearn
+from sklearn.decomposition import FastICA
 
 class DataPreprocess:
     # in order to use the .csv file with mne, we need to first 
@@ -79,6 +81,7 @@ class Filter:
         raw = Filter.apply_detrend(raw)
         raw = Filter.apply_notch_filter(raw)
         raw = Filter.apply_bandpass_filter(raw)
+        raw = Filter.apply_fastICA(raw)
         return raw
     
     def average_signal(raw):
@@ -101,6 +104,17 @@ class Filter:
         plt.grid()
         plt.legend()
         plt.show()
+        
+    def apply_fastICA(raw):
+        n_channels = raw.info['nchan']
+        n_times = raw.n_times
+        print(f"Number of Channels: {n_channels}, Number of Time Points: {n_times}")
+        data = raw.get_data().T  # Shape: (1400000, 1)
+        ica = FastICA(n_components=1, random_state=42)
+        transformed_data = ica.fit_transform(data)
+        print("Transformed Data Shape:", transformed_data.shape)
+        return raw
+
 
 
 class Plot:
