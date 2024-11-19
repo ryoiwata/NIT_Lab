@@ -1,0 +1,34 @@
+to begin understanding the efficacy of the subscalp eeg devices, 
+we can train a model to understand if there is a stimulus understood
+in a particular recording
+
+to do this, we will need a dataset of multiple rats that are recorded. 
+the rat eegs will have to be under normal conditons, without any specific 
+stimulus, as well as with a specific defined stimulus
+
+from this datset, we can train a model to recognize patterns in the eeg 
+data, and understand whether or not there was a stimulus, given the 
+rat's eeg response that is recorded. 
+
+with this model, we can then pass our own data and understand whether 
+or not the reading that we have is clear enough to accurately depict 
+whether or not a stimulus was provided to the rat
+
+if we pass a recording in which the rat was stimulated, the model should
+return True. 
+
+if we pass a recording in which the rat was not stimulater, the model 
+should return False. 
+
+one contender of a dataset to use for this task is the following: 
+
+"Large scale multi-channel EEG in rats (v1)," EBRAINS
+
+this dataset contains ssEEG recordings of two separate rats on three
+consecutive days under anesthesia and under different levels of 
+wakefullness which are specified in the dataset information 
+
+=================================================================
+
+RESULTS FROM FILTERING: 
+

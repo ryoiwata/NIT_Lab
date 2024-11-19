@@ -26,3 +26,5 @@ wu_venv/share/
 wu_venv/man/
 .DS_Store
 Thumbs.db
+
+wu_venv/ssEEG/rat_eeg_model/dataset
