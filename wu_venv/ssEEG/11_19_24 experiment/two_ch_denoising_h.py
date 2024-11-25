@@ -39,13 +39,11 @@ class Menu:
                     break
                 
                 if option == 1:
-                    print("fuck")
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     Plot.plot_original(eeg_data)
                     option = 0
 
                 if option == 2:
-                    print("trying option 2 shawty")
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     raw = DataPreprocess.convert_to_fif(eeg_data)
                     Plot.plot_unfiltered_fft(raw)
@@ -58,8 +56,7 @@ class Menu:
                     Plot.plot_filtered_fft(filtered_raw)
                     option = 0
 
-                if option == 4: 
-                    print("hellloooooo")
+                if option == 4:
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     raw = DataPreprocess.convert_to_fif(eeg_data)
                     filtered_raw = Filter.apply_all_filters(raw)
@@ -178,7 +175,7 @@ class DataPreprocess:
         except Exception as e:
             print(f"Error occurred: {e}")
             return None, str(e)
- 
+
 class Filter:
     
     # this function just returns basic information about the data 
