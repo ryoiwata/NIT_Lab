@@ -13,95 +13,115 @@ from sklearn.decomposition import FastICA
 
 
 class Menu:
-    def menu(option, csv_path):
-        while True:
-            print("\nSelect an option:")
-            print("1. Plot Raw Signal (CSV)")
-            print("2. Plot Unfiltered Fourier")
-            print("3. Plot Filtered Fourier")
-            print("4. Plot Filtered PSD Diagram")
-            print("5. Downsample the Data")
-            print("6. Inspect the Signal")
-            print("7. Detrend the Signal")
-            print("8. Apply Bandpass")
-            print("9. Apply 60,50 Hz Notch")
-            print("10. Average Signal")
-            print("11. Apply FastICA")
-            print("12. Apply all Filters & plot")
-            print("13. Start New Analysis")
-            print("14. Close Analysis")
-            
+    def menu(csv_path, option=0):
+        while True:            
             try:
+                if option == 0: 
+                    print("Select an option:")
+                    print("1. Plot Raw Signal (CSV)")
+                    print("2. Plot Unfiltered Fourier")
+                    print("3. Plot Filtered Fourier")
+                    print("4. Plot Filtered PSD Diagram")
+                    print("5. Downsample the Data")
+                    print("6. Inspect the Signal")
+                    print("7. Detrend the Signal")
+                    print("8. Apply Bandpass")
+                    print("9. Apply 60,50 Hz Notch")
+                    print("10. Average Signal")
+                    print("11. Apply FastICA")
+                    print("12. Apply all Filters & plot")
+                    print("13. Start New Analysis")
+                    print("14. Close Analysis")
+                    option = int(input("\nEnter your choice (1-14): "))
+
                 if option == 14:
                     print("Closing analysis. Goodbye!")
-                    break  # Exit the loop if "Close Analysis" is selected
-                elif 1:
+                    break
+                
+                if option == 1:
+                    print("fuck")
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     Plot.plot_original(eeg_data)
-                elif 2:
+                    option = 0
+
+                if option == 2:
+                    print("trying option 2 shawty")
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     raw = DataPreprocess.convert_to_fif(eeg_data)
                     Plot.plot_unfiltered_fft(raw)
+                    option = 0
 
-                elif 3:
+                if option == 3:
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     raw = DataPreprocess.convert_to_fif(eeg_data)
                     filtered_raw = Filter.apply_all_filters(raw)
                     Plot.plot_filtered_fft(filtered_raw)
+                    option = 0
 
-                elif 4: 
+                if option == 4: 
+                    print("hellloooooo")
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     raw = DataPreprocess.convert_to_fif(eeg_data)
                     filtered_raw = Filter.apply_all_filters(raw)
                     FFT.compute_tfr_multitaper(raw, output_path="wu_venv/ssEEG/11_19_24 experiment/new_output/tfr_multitaper_entire_duration.png")
+                    option = 0
 
-                elif 5: 
+                if option ==  5: 
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     raw = DataPreprocess.convert_to_fif(eeg_data)
-                    Filter.apply_downsampling(raw, new_sfreq=None)                  
+                    Filter.apply_downsampling(raw, new_sfreq=None)  
+                    option = 0            
                     
-                elif 6: 
+                if option ==  6: 
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     raw = DataPreprocess.convert_to_fif(eeg_data)
                     Filter.inspect_signal(raw)
+                    option = 0
 
-                elif 7:
+                if option == 7:
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     raw = DataPreprocess.convert_to_fif(eeg_data)
                     Filter.apply_detrend(raw)
+                    option = 0
                     
-                elif 8:
+                if option == 8:
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     raw = DataPreprocess.convert_to_fif(eeg_data)
                     Filter.apply_bandpass_filter
+                    option = 0
                     
-                elif 9: 
+                if option == 9: 
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     raw = DataPreprocess.convert_to_fif(eeg_data)
                     Filter.apply_notch_filter(raw)
+                    option = 0
                     
-                elif 10:
+                if option == 10:
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     raw = DataPreprocess.convert_to_fif(eeg_data)
                     Filter.average_signal(raw)
+                    option = 0
                     
-                elif 11:
+                if option ==  11:
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     raw = DataPreprocess.convert_to_fif(eeg_data)
                     Filter.apply_fastICA(raw)
+                    option = 0
                     
-                elif 12:
+                if option ==  12:
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     DataPreprocess.convert_to_fif(eeg_data)
                     filtered_raw = Filter.apply_all_filters(raw)
                     Plot.plot_filtered_raw(filtered_raw)
+                    option = 0
                     
-                elif 13:
+                if option == 13:
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     DataPreprocess.convert_to_fif(eeg_data)
                     new_csv = input("Which file would you like to look at next?: ")
                 else:
                     print("Choose a valid option")
+                option = int(input("\nEnter your choice (1-14): "))
             except ValueError:
                 print("Pick between 1-14. That's all we have so far.")
 
@@ -153,8 +173,8 @@ class DataPreprocess:
             fif_path = "eeg_data_raw.fif"
             raw.save(fif_path, overwrite=True)
             message = f"CSV converted to FIF and saved at {fif_path}"
-            return raw, message  # Return both the raw object and a message
-
+            #return raw, message  # Return both the raw object and a message
+            return raw
         except Exception as e:
             print(f"Error occurred: {e}")
             return None, str(e)
@@ -232,6 +252,7 @@ class Filter:
 class Plot:
     @staticmethod
     def plot_original(eeg_data):
+        plt.ion()
         plt.figure(figsize=(10, 6))
         plt.plot(eeg_data[0, :10000], label='Channel 1')  # First channel
         plt.plot(eeg_data[1, :10000], label='Channel 2')  # Second channel
@@ -241,7 +262,7 @@ class Plot:
         plt.legend()
         plt.savefig("wu_venv/ssEEG/denoising_MNE/output/original_eeg_plot.png", dpi=300)
         plt.show()
-
+        
     @staticmethod
     def plot_raw(raw):
         fig = raw.plot(scalings='auto', n_channels=1, duration=40, title="Raw EEG Signal", show=False)
