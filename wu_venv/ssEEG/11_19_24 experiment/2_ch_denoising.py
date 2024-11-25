@@ -8,11 +8,8 @@ import os
 from mne.time_frequency import tfr_multitaper
 
 
-
-# Define the file path
 def main():
-    
-    csv_path = "wu_venv/ssEEG/11_19_24 experiment/csv_files/SDS00008.csv"
+    csv_path = "wu_venv/ssEEG/11_19_24 experiment/csv_files/SDS00008.csv"  # Define your CSV file path
     option = int(input("\nEnter your choice (1-14): "))
     Menu.menu(option, csv_path)
 

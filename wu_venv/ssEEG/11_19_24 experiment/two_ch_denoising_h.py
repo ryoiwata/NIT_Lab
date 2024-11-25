@@ -32,7 +32,6 @@ class Menu:
             print("14. Close Analysis")
             
             try:
-                option = int(input("\nEnter your choice (1-14): "))
                 if option == 14:
                     print("Closing analysis. Goodbye!")
                     break  # Exit the loop if "Close Analysis" is selected
