@@ -20,8 +20,11 @@ class Menu:
                     print("Select an option:")
                     print("1. Plot Raw Signal (CSV)")
                     print("2. Plot Unfiltered Fourier")
+                    print("2.5 Plot Cropped Unfiltered Fourier")
                     print("3. Plot Filtered Fourier")
-                    print("4. Plot Filtered PSD Diagram")
+                    print("3.5 Plot Cropped Filtered Fourier")
+                    print("4. Plot Filtered TFR Diagram")
+                    print("4.5 Plot Unfiltered TFR Diagram")
                     print("5. Downsample the Data")
                     print("6. Inspect the Signal")
                     print("7. Detrend the Signal")
@@ -32,7 +35,7 @@ class Menu:
                     print("12. Apply all Filters & plot")
                     print("13. Start New Analysis")
                     print("14. Close Analysis")
-                    option = int(input("\nEnter your choice (1-14): "))
+                    option = float(input("\nEnter your choice (1-14): "))
 
                 if option == 14:
                     print("Closing analysis. Goodbye!")
@@ -48,6 +51,12 @@ class Menu:
                     raw = DataPreprocess.convert_to_fif(eeg_data)
                     Plot.plot_unfiltered_fft(raw)
                     option = 0
+                
+                if option == 2.5:
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    raw = DataPreprocess.convert_to_fif(eeg_data)
+                    Plot.plot_cropped_unfiltered_fft(raw)
+                    option = 0
 
                 if option == 3:
                     eeg_data = DataPreprocess.remove_missing(csv_path)
@@ -55,12 +64,27 @@ class Menu:
                     filtered_raw = Filter.apply_all_filters(raw)
                     Plot.plot_filtered_fft(filtered_raw)
                     option = 0
+                
+                if option == 3.5:
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    raw = DataPreprocess.convert_to_fif(eeg_data)
+                    filtered_raw = Filter.apply_all_filters(raw)
+                    Plot.plot_cropped_filtered_fft(filtered_raw)
+                    option = 0
+                    
 
                 if option == 4:
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     raw = DataPreprocess.convert_to_fif(eeg_data)
                     filtered_raw = Filter.apply_all_filters(raw)
-                    FFT.compute_tfr_multitaper(raw, output_path="wu_venv/ssEEG/11_19_24 experiment/new_output/tfr_multitaper_entire_duration.png")
+                    FFT.compute_filtered_tfr_multitaper(filtered_raw, output_path="wu_venv/ssEEG/11_19_24 experiment/new_output/tfr_multitaper_entire_duration.png")
+                    option = 0
+                
+                if option == 4.5:
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    raw = DataPreprocess.convert_to_fif(eeg_data)
+                    filtered_raw = Filter.apply_all_filters(raw)
+                    FFT.compute_unfiltered_tfr_multitaper(raw, output_path="wu_venv/ssEEG/11_19_24 experiment/new_output/tfr_multitaper_entire_duration.png")
                     option = 0
 
                 if option ==  5: 
@@ -99,13 +123,13 @@ class Menu:
                     Filter.average_signal(raw)
                     option = 0
                     
-                if option ==  11:
+                if option == 11:
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     raw = DataPreprocess.convert_to_fif(eeg_data)
                     Filter.apply_fastICA(raw)
                     option = 0
                     
-                if option ==  12:
+                if option == 12:
                     eeg_data = DataPreprocess.remove_missing(csv_path)
                     DataPreprocess.convert_to_fif(eeg_data)
                     filtered_raw = Filter.apply_all_filters(raw)
@@ -118,7 +142,7 @@ class Menu:
                     new_csv = input("Which file would you like to look at next?: ")
                 else:
                     print("Choose a valid option")
-                option = int(input("\nEnter your choice (1-14): "))
+                option = float(input("\nEnter your choice (1-14): "))
             except ValueError:
                 print("Pick between 1-14. That's all we have so far.")
 
@@ -270,6 +294,7 @@ class Plot:
     def plot_filtered_raw(filtered_raw):
         fig = filtered_raw.plot(scalings='auto', n_channels=1, duration=40, title="Filtered EEG Signal", show=False)
         fig.savefig("wu_venv/ssEEG/11_19_24 experiment/new_output/filtered_eeg_plot.png", dpi=300)
+        plt.show()
         plt.close(fig)
 
     @staticmethod
@@ -454,6 +479,33 @@ class Plot:
         plt.savefig(output_path, dpi=300)
         print(f"FFT plot saved to {output_path}")
         plt.show()
+        
+    def plot_cropped_unfiltered_fft(raw):
+        title = "FFT Graph of Uniltered Signal"
+        output_path = "wu_venv/ssEEG/11_19_24 experiment/new_output/unfiltered_fft.png"
+        data = raw.get_data(picks='eeg')[0]  # Assuming single-channel EEG
+        sfreq = raw.info['sfreq']  # Sampling frequency in Hz
+
+        # Compute FFT
+        fft_values = np.fft.rfft(data)  # Real FFT
+        fft_freqs = np.fft.rfftfreq(len(data), d=1/sfreq)  # Frequency axis
+
+        # Compute amplitude spectrum
+        amplitude = np.abs(fft_values)
+
+        # Plot the FFT
+        plt.figure(figsize=(10, 6))
+        plt.plot(fft_freqs, amplitude, color='blue', label='Amplitude Spectrum')
+        plt.xlabel('Frequency (Hz)')
+        plt.ylabel('Amplitude')
+        plt.title(title)
+        plt.grid(True)
+        plt.legend()
+        plt.xlim(0.5, 30)
+
+        plt.savefig(output_path, dpi=300)
+        print(f"FFT plot saved to {output_path}")
+        plt.show()
 
     def plot_filtered_fft(filtered_raw,):
         title = "FFT Graph of Filtered Signal"
@@ -480,6 +532,32 @@ class Plot:
         plt.savefig(output_path, dpi=300)
         print(f"FFT plot saved to {output_path}")
         plt.show()
+    def plot_cropped_filtered_fft(filtered_raw,):
+        title = "FFT Graph of Filtered Signal"
+        output_path = "wu_venv/ssEEG/11_19_24 experiment/new_output/filtered_fft.png"
+        data = filtered_raw.get_data(picks='eeg')[0]  # Assuming single-channel EEG
+        sfreq = filtered_raw.info['sfreq']  # Sampling frequency in Hz
+
+        # Compute FFT
+        fft_values = np.fft.rfft(data)  # Real FFT
+        fft_freqs = np.fft.rfftfreq(len(data), d=1/sfreq)  # Frequency axis
+
+        # Compute amplitude spectrum
+        amplitude = np.abs(fft_values)
+
+        # Plot the FFT
+        plt.figure(figsize=(10, 6))
+        plt.plot(fft_freqs, amplitude, color='blue', label='Amplitude Spectrum')
+        plt.xlabel('Frequency (Hz)')
+        plt.ylabel('Amplitude')
+        plt.title(title)
+        plt.grid(True)
+        plt.legend()
+        plt.xlim(0.5,30)
+
+        plt.savefig(output_path, dpi=300)
+        print(f"FFT plot saved to {output_path}")
+        plt.show()
         
 class FFT:
     def compute_psd_plot(raw):
@@ -493,25 +571,17 @@ class FFT:
 
 
     @staticmethod
-    def compute_tfr_multitaper(raw, output_path="wu_venv/ssEEG/11_19_24 experiment/new_output/tfr_multitaper_entire_duration.png"):
-        # Compute and save Time-Frequency Representation (TFR) for the entire duration.
-        
-        # Parameters:
-        # - raw: mne.io.Raw, the raw EEG data
-        # - output_path: str, path to save the TFR plot
-        
+    def compute_filtered_tfr_multitaper(raw, output_path="wu_venv/ssEEG/11_19_24 experiment/new_output/tfr_multitaper_entire_duration.png"):        
         try:
             print("Performing Time-Frequency Analysis for the entire duration...")
             
-            # Extract the data and create an Epochs-like object for the entire signal
-            data = raw.get_data(picks='eeg')  # Shape: (n_channels, n_times)
-            times = raw.times  # Time array corresponding to the data
+            data = raw.get_data(picks='eeg')
+            times = raw.times 
             
-            # Define frequency range for TFR analysis
+            # frequency range for TFR analysis
             freqs = np.linspace(0.5, 40, 100)  # 0.5 to 40 Hz, 100 frequency steps
-            n_cycles = freqs / 2.0  # Number of cycles per frequency
+            n_cycles = freqs / 2.0  # num of cycles per frequency
             
-            # Compute the time-frequency representation (TFR)
             power = tfr_multitaper(
                 raw,
                 freqs=np.linspace(0.5, 40, 100),
@@ -522,7 +592,6 @@ class FFT:
                 return_itc=False
             )
 
-            # Directly plot the TFR
             power.plot(
                 baseline=(None, 0),
                 mode="logratio",
@@ -530,6 +599,40 @@ class FFT:
             )
             plt.savefig("wu_venv/ssEEG/11_19_24 experiment/new_output/tfr_multitaper_entire_duration.png", dpi=300)
             plt.show()
+            plt.close()
+            
+        except Exception as e:
+            print(f"An error occurred during TFR analysis: {e}")
+        
+    def compute_unfiltered_tfr_multitaper(raw, output_path="wu_venv/ssEEG/11_19_24 experiment/new_output/tfr_multitaper_entire_duration.png"):        
+        try:
+            print("Performing Time-Frequency Analysis for the entire duration...")
+            
+            data = raw.get_data(picks='eeg')
+            times = raw.times 
+            
+            # frequency range for TFR analysis
+            freqs = np.linspace(0.5, 40, 100)  # 0.5 to 40 Hz, 100 frequency steps
+            n_cycles = freqs / 2.0  # num of cycles per frequency
+            
+            power = tfr_multitaper(
+                raw,
+                freqs=np.linspace(0.5, 40, 100),
+                n_cycles=freqs / 2.0,
+                time_bandwidth=2.0,
+                picks="eeg",
+                average=False,
+                return_itc=False
+            )
+
+            power.plot(
+                baseline=(None, 0),
+                mode="logratio",
+                title="TFR for Entire Duration"
+            )
+            plt.savefig("wu_venv/ssEEG/11_19_24 experiment/new_output/tfr_multitaper_entire_duration.png", dpi=300)
+            plt.show()
+            plt.close()
             
         except Exception as e:
             print(f"An error occurred during TFR analysis: {e}")
