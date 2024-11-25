@@ -11,6 +11,50 @@ from mne.time_frequency import tfr_multitaper
 import sklearn
 from sklearn.decomposition import FastICA
 
+
+class Menu:
+    def menu(option):
+          while True:
+            print("\nSelect an option:")
+            print("1. Plot Raw Signal (CSV)")
+            print("2. Plot Unfiltered Fourier")
+            print("3. Plot Filtered Fourier")
+            print("4. Plot Filtered PSD Diagram")
+            print("5. Downsample the Data")
+            print("6. Inspect the Signal")
+            print("7. Detrend the Signal")
+            print("8. Apply Bandpass")
+            print("9. Apply 60,50 Hz Notch")
+            print("10. Average Signal")
+            print("11. Apply FastICA")
+            print("12. Apply all Filters & plot")
+            print("13. Start New Analysis")
+            print("14. Close Analysis")
+            
+            try:
+                option = int(input("\nEnter your choice (1-14): "))
+                if option == 14:
+                    print("Closing analysis. Goodbye!")
+                    break  # Exit the loop if "Close Analysis" is selected
+                elif 1:
+                elif 2:
+                elif 3:
+                elif 4: 
+                elif 5: 
+                elif 6: 
+                elif 7:
+                elif 8:
+                elif 9: 
+                elif 10:
+                elif 11:
+                elif 12:
+                elif 13: # You can add function calls or further logic here
+                else:
+                    print("What")
+            except ValueError:
+                print("Pick between 1-14. That's all we have so far.")
+
+
 class DataPreprocess:
     # in order to use the .csv file with mne, we need to first 
     # convert it to a fif file format 
@@ -63,56 +107,7 @@ class DataPreprocess:
         except Exception as e:
             print(f"Error occurred: {e}")
             return None, str(e)
-
-        
-    def convert_to_csv(fif_path):
-        
-        try:
-            raw = mne.io.read_raw_fif(fif_path, preload=True)
-
-            data = raw.get_data()[0]
-            timestamps = raw.times
-            
-            df = pd.DataFrame({
-                'Time (s)': timestamps,
-                'Voltage (V)': data
-            })
-            
-            csv_output_path = "wu_venv/ssEEG/denoising_MNE/converted_filtered_csv/filtered_csv.csv"
-            
-            df.to_csv(csv_output_path, index=False)
-            
-            print(f"Data successfully converted from {fif_path} to {csv_output_path}")
-        
-        except Exception as e:
-            print(f"Error during conversion: {e}")
-        
-
-    def return_filtered_fif_path(raw):
-        try:
-        # Define the output .fif file path
-            output_fif_path = "wu_venv/ssEEG/denoising_MNE/filtered_data.fif"
-
-            # Apply the filters
-            print("Applying filters to the raw data...")
-            raw = Filter.apply_detrend(raw)
-            raw = Filter.apply_notch_filter(raw)
-            raw = Filter.apply_bandpass_filter(raw)
-            raw = Filter.apply_fastICA(raw)
-
-            # Save the filtered raw data to a .fif file
-            raw.save(output_fif_path, overwrite=True)
-            print(f"Filtered data successfully saved to {output_fif_path}")
-
-            # Return the path of the saved .fif file
-            return output_fif_path
-
-        except Exception as e:
-            print(f"Error during filtering and saving: {e}")
-            return None
-        
-        
-        
+ 
 class Filter:
     
     # this function just returns basic information about the data 
@@ -174,54 +169,7 @@ class Filter:
         raw = Filter.apply_bandpass_filter(raw)
         raw = Filter.apply_fastICA(raw)
         return raw
-        
-        
-        
-    def remove_artifacts(stimulus_recording, baseline_recording, fs, freq_band=(0.5, 100), threshold=2.5):
-        # Ensure same length
-        min_length = min(len(stimulus_recording), len(baseline_recording))
-        stim = stimulus_recording[:min_length]
-        baseline = baseline_recording[:min_length]
-        
-        # Apply bandpass filter to both recordings
-        nyq = fs / 2
-        b, a = signal.butter(4, [freq_band[0]/nyq, freq_band[1]/nyq], btype='band')
-        stim_filtered = signal.filtfilt(b, a, stim)
-        baseline_filtered = signal.filtfilt(b, a, baseline)
-        
-        # Calculate baseline statistics
-        baseline_std = np.std(baseline_filtered)
-        baseline_mean = np.mean(baseline_filtered)
-        
-        # Detect artifacts using z-score
-        z_scores = zscore(stim_filtered)
-        artifact_mask = np.abs(z_scores) > threshold
-        
-        # Additional artifact detection using baseline comparison
-        amplitude_ratio = np.abs(stim_filtered) / (np.abs(baseline_filtered) + 1e-10)
-        amplitude_artifacts = amplitude_ratio > 3  # Threshold for unusual amplitude ratios
-        
-        # Combine artifact masks
-        combined_artifact_mask = artifact_mask | amplitude_artifacts
-        
-        # Remove artifacts by interpolation
-        cleaned_recording = stim.copy()
-        artifact_indices = np.where(combined_artifact_mask)[0]
-        
-        for idx in artifact_indices:
-            # Use local window for interpolation
-            window = 50  # points
-            start = max(0, idx - window)
-            end = min(len(stim), idx + window)
-            
-            # Find clean points within window
-            clean_indices = np.where(~combined_artifact_mask[start:end])[0] + start
-            
-            if len(clean_indices) > 0:
-                # Interpolate using clean points
-                cleaned_recording[idx] = np.interp(idx, clean_indices,stim[clean_indices])
-        
-        return cleaned_recording, combined_artifact_mask
+
 
 class Plot:
     @staticmethod
