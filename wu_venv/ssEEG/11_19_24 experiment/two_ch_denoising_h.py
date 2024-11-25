@@ -13,8 +13,8 @@ from sklearn.decomposition import FastICA
 
 
 class Menu:
-    def menu(option):
-          while True:
+    def menu(option, csv_path):
+        while True:
             print("\nSelect an option:")
             print("1. Plot Raw Signal (CSV)")
             print("2. Plot Unfiltered Fourier")
@@ -37,20 +37,72 @@ class Menu:
                     print("Closing analysis. Goodbye!")
                     break  # Exit the loop if "Close Analysis" is selected
                 elif 1:
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    Plot.plot_original(eeg_data)
                 elif 2:
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    raw = DataPreprocess.convert_to_fif(eeg_data)
+                    Plot.plot_unfiltered_fft(raw)
+
                 elif 3:
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    raw = DataPreprocess.convert_to_fif(eeg_data)
+                    filtered_raw = Filter.apply_all_filters(raw)
+                    Plot.plot_filtered_fft(filtered_raw)
+
                 elif 4: 
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    raw = DataPreprocess.convert_to_fif(eeg_data)
+                    filtered_raw = Filter.apply_all_filters(raw)
+                    FFT.compute_tfr_multitaper(raw, output_path="wu_venv/ssEEG/11_19_24 experiment/new_output/tfr_multitaper_entire_duration.png")
+
                 elif 5: 
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    raw = DataPreprocess.convert_to_fif(eeg_data)
+                    Filter.apply_downsampling(raw, new_sfreq=None)                  
+                    
                 elif 6: 
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    raw = DataPreprocess.convert_to_fif(eeg_data)
+                    Filter.inspect_signal(raw)
+
                 elif 7:
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    raw = DataPreprocess.convert_to_fif(eeg_data)
+                    Filter.apply_detrend(raw)
+                    
                 elif 8:
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    raw = DataPreprocess.convert_to_fif(eeg_data)
+                    Filter.apply_bandpass_filter
+                    
                 elif 9: 
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    raw = DataPreprocess.convert_to_fif(eeg_data)
+                    Filter.apply_notch_filter(raw)
+                    
                 elif 10:
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    raw = DataPreprocess.convert_to_fif(eeg_data)
+                    Filter.average_signal(raw)
+                    
                 elif 11:
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    raw = DataPreprocess.convert_to_fif(eeg_data)
+                    Filter.apply_fastICA(raw)
+                    
                 elif 12:
-                elif 13: # You can add function calls or further logic here
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    DataPreprocess.convert_to_fif(eeg_data)
+                    filtered_raw = Filter.apply_all_filters(raw)
+                    Plot.plot_filtered_raw(filtered_raw)
+                    
+                elif 13:
+                    eeg_data = DataPreprocess.remove_missing(csv_path)
+                    DataPreprocess.convert_to_fif(eeg_data)
+                    new_csv = input("Which file would you like to look at next?: ")
                 else:
-                    print("What")
+                    print("Choose a valid option")
             except ValueError:
                 print("Pick between 1-14. That's all we have so far.")
 
@@ -121,11 +173,18 @@ class Filter:
         print(f"Signal Statistics - Min: {min_value:.2f}, Max: {max_value:.2f}, Mean: {mean_value:.2f}, Std Dev: {std_dev:.2f}")
 
     @staticmethod
-    def apply_downsampling(raw, new_sfreq=1000): # default downsample rate is 5000 hZ
-        downsampled_raw = raw.resample(new_sfreq, npad="auto") # automatically pad data 
+    def apply_downsampling(raw, new_sfreq=None): # default downsample rate is 5000 hZ
+        if new_sfreq is None:
+            try:
+                new_sfreq = float(input("Enter the new sampling frequency (Hz): "))
+            except ValueError:
+                print("Use numbers.")
+                return raw
+    
+        downsampled_raw = raw.resample(new_sfreq, npad="auto")  # Automatically pad data
         print(f"Data downsampled to {new_sfreq} Hz.")
         raw = downsampled_raw
-        return raw # finally return the same thing again
+        return raw
 
     @staticmethod
     def apply_detrend(raw): # next detrend the data using the iir filter 
@@ -182,7 +241,7 @@ class Plot:
         plt.title("Subset of Raw EEG Signal from .csv")
         plt.legend()
         plt.savefig("wu_venv/ssEEG/denoising_MNE/output/original_eeg_plot.png", dpi=300)
-        plt.close()
+        plt.show()
 
     @staticmethod
     def plot_raw(raw):
@@ -353,6 +412,31 @@ class Plot:
 
         plt.savefig("wu_venv/ssEEG/denoising_MNE/output/touching_whiskers_vs_not.png", dpi=300)
 
+    def plot_unfiltered_fft(raw):
+        title = "FFT Graph of Uniltered Signal"
+        output_path = "wu_venv/ssEEG/11_19_24 experiment/new_output/unfiltered_fft.png"
+        data = raw.get_data(picks='eeg')[0]  # Assuming single-channel EEG
+        sfreq = raw.info['sfreq']  # Sampling frequency in Hz
+
+        # Compute FFT
+        fft_values = np.fft.rfft(data)  # Real FFT
+        fft_freqs = np.fft.rfftfreq(len(data), d=1/sfreq)  # Frequency axis
+
+        # Compute amplitude spectrum
+        amplitude = np.abs(fft_values)
+
+        # Plot the FFT
+        plt.figure(figsize=(10, 6))
+        plt.plot(fft_freqs, amplitude, color='blue', label='Amplitude Spectrum')
+        plt.xlabel('Frequency (Hz)')
+        plt.ylabel('Amplitude')
+        plt.title(title)
+        plt.grid(True)
+        plt.legend()
+
+        plt.savefig(output_path, dpi=300)
+        print(f"FFT plot saved to {output_path}")
+        plt.show()
 
     def plot_filtered_fft(filtered_raw,):
         title = "FFT Graph of Filtered Signal"
